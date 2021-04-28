@@ -67,7 +67,7 @@ pub mod pallet {
     // Pallet storage
     #[pallet::storage]
     #[pallet::getter(fn accounts)]
-    pub(super) type AccountsStore <T:Config> = StorageMap<_, Twox64Concat, T::AccountId, (Vec<u8>, u8)>;
+    pub(super) type AccountsStore <T: Config> = StorageMap<_, Twox64Concat, T::AccountId, (Vec<u8>, u8)>;
 
     // Pallet events
     #[pallet::event]
@@ -88,11 +88,30 @@ pub mod pallet {
     // Pallet hooks
     #[pallet::hooks]
     impl<T:Config> Hooks<BlockNumberFor<T>> for Pallet<T>{}
+
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        pub initial_accounts: Vec<(T::AccountId, (Vec<u8>, u8))>,
+    }
+
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            Self {
+                initial_accounts: Default::default()
+            }
+        }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            for acc in &self.initial_accounts {
+                AccountsStore::<T>::insert(&acc.0, &acc.1)
+            }
+        }
+    }
 }
 
-// TODO
-/*#[cfg(test)]
-mod mock;
-
 #[cfg(test)]
-mod tests;*/
+mod tests;
