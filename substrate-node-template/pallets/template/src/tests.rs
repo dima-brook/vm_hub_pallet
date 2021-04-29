@@ -7,6 +7,7 @@ use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
 };
+use sp_std::convert::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -106,4 +107,36 @@ fn transfer_money_test() {
             Error::<Test>::CoinUnsupported
         );
     })
+}
+
+#[test]
+fn coin_sanity_test() {
+    assert_ok!(coins::SupportedCoin::<Test>::try_from(
+        consts::ETH_CURRENCY_CODE
+    ));
+    assert_eq!(
+        coins::SupportedCoin::<Test>::try_from(255).err().unwrap(),
+        Error::CoinUnsupported
+    );
+}
+
+#[test]
+fn account_info_sanity_test() {
+    assert_ok!(coins::AccountInfo::<Test>::try_from((
+        b"Bob".to_vec(),
+        consts::ETH_CURRENCY_CODE
+    )));
+
+    assert_eq!(
+        coins::AccountInfo::<Test>::try_from((b"Bad".to_vec(), 255))
+            .err()
+            .unwrap(),
+        Error::<Test>::CoinUnsupported
+    );
+    assert_eq!(
+        coins::AccountInfo::<Test>::try_from((vec![], 255))
+            .err()
+            .unwrap(),
+        Error::<Test>::NameEmpty
+    );
 }

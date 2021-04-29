@@ -1,39 +1,45 @@
 use crate::consts;
 use crate::{Config, Error};
 use sp_std::{
+    convert::{TryFrom, TryInto},
     marker::PhantomData,
-    convert::{TryFrom, TryInto}
 };
 
+#[derive(Debug)]
 pub struct AccountInfo<T> {
-    name: Vec<u8>,
-    coin: SupportedCoin<T>
+    pub name: Vec<u8>,
+    pub coin: SupportedCoin<T>,
 }
 
 impl<T: Config> TryFrom<(Vec<u8>, u8)> for AccountInfo<T> {
     type Error = Error<T>;
 
     fn try_from(val: (Vec<u8>, u8)) -> Result<Self, Error<T>> {
-        return Ok(Self {
+        if val.0.is_empty() {
+            return Err(Error::<T>::NameEmpty);
+        }
+
+        Ok(Self {
             name: val.0,
-            coin: val.1.try_into()?
+            coin: val.1.try_into()?,
         })
     }
 }
 
 // Supported coins
+#[derive(Debug)]
 pub enum SupportedCoin<T> {
     Ethereum,
-    _Unreachable(PhantomData<T>)
+    _Unreachable(PhantomData<T>),
 }
 
 impl<T: Config> TryFrom<u8> for SupportedCoin<T> {
     type Error = Error<T>;
 
     fn try_from(val: u8) -> Result<Self, Error<T>> {
-        return match val {
+        match val {
             consts::ETH_CURRENCY_CODE => Ok(SupportedCoin::<T>::Ethereum),
-            _ => Err(Error::CoinUnsupported)
+            _ => Err(Error::CoinUnsupported),
         }
     }
 }

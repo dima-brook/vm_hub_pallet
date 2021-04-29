@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-mod consts;
 mod coins;
+mod consts;
 
 pub use pallet::*;
 
@@ -9,7 +9,7 @@ pub mod pallet {
     use super::coins::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
-    use sp_std::{marker::PhantomData, vec::Vec, convert::*};
+    use sp_std::{convert::*, marker::PhantomData, vec::Vec};
 
     // Main pallet config
     #[pallet::config]
@@ -75,15 +75,18 @@ pub mod pallet {
     #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub (super) fn deposit_event)]
     pub enum Event<T: Config> {
-        AccountCreation(T::AccountId, RawAccountInfo),  // AccountId, Currency Type
+        AccountCreation(T::AccountId, RawAccountInfo), // AccountId, Currency Type
         TransferFund(T::AccountId, RawCurrencyType, u128), // AccountId, Currency Type, Ammount
     }
 
     // Errors
+    #[derive(PartialEq)]
     #[pallet::error]
     pub enum Error<T> {
         /// Unsupported currency
         CoinUnsupported,
+        /// Empty Name during creation
+        NameEmpty,
     }
 
     // Pallet hooks
