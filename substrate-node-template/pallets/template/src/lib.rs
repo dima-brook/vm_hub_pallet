@@ -1,13 +1,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-pub use pallet::*;
 mod consts;
+mod coins;
+
+pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
-    use super::consts::*;
+    use super::coins::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
-    use sp_std::{marker::PhantomData, vec::Vec};
+    use sp_std::{marker::PhantomData, vec::Vec, convert::*};
 
     // Main pallet config
     #[pallet::config]
@@ -35,14 +37,10 @@ pub mod pallet {
         ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
 
-            match currency {
-                ETH_CURRENCY_CODE => {
-                    Self::deposit_event(Event::AccountCreation(sender.clone(), currency))
-                }
-                _ => return Err(Error::<T>::CoinUnsupported.into()),
-            }
+            let raw_info = (name, currency);
+            AccountInfo::<T>::try_from(raw_info.clone())?;
 
-            <AccountsStore<T>>::insert(&sender, (name, currency));
+            <AccountsStore<T>>::insert(&sender, raw_info);
             Ok(().into())
         }
 
@@ -53,36 +51,32 @@ pub mod pallet {
         pub(super) fn transfer_funds(
             origin: OriginFor<T>,
             currency: u8,
-            amount: u8,
+            amount: u128,
         ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
 
-            match currency {
-                ETH_CURRENCY_CODE => {
-                    // TODO: Implement logic
-                }
-                _ => return Err(Error::<T>::CoinUnsupported.into()),
-            }
+            SupportedCoin::<T>::try_from(currency)?;
 
             Self::deposit_event(Event::TransferFund(sender, currency, amount));
             Ok(().into())
         }
     }
 
-    type AccountInfo = (Vec<u8>, u8);
+    type RawCurrencyType = u8;
+    type RawAccountInfo = (Vec<u8>, RawCurrencyType);
     // Pallet storage
     #[pallet::storage]
     #[pallet::getter(fn accounts)]
     pub(super) type AccountsStore<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, AccountInfo>;
+        StorageMap<_, Twox64Concat, T::AccountId, RawAccountInfo>;
 
     // Pallet events
     #[pallet::event]
     #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub (super) fn deposit_event)]
     pub enum Event<T: Config> {
-        AccountCreation(T::AccountId, u8),  // AccountId, Currency Type
-        TransferFund(T::AccountId, u8, u8), // AccountId, Currency Type, Ammount
+        AccountCreation(T::AccountId, RawAccountInfo),  // AccountId, Currency Type
+        TransferFund(T::AccountId, RawCurrencyType, u128), // AccountId, Currency Type, Ammount
     }
 
     // Errors
@@ -98,7 +92,7 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
-        pub initial_accounts: Vec<(T::AccountId, AccountInfo)>,
+        pub initial_accounts: Vec<(T::AccountId, RawAccountInfo)>,
     }
 
     #[cfg(feature = "std")]
