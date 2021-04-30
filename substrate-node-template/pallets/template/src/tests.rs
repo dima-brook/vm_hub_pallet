@@ -74,45 +74,41 @@ fn new_account_creation() {
     test_obj().execute_with(|| {
         assert_ok!(Custom::create_account(
             Origin::signed(2),
-            b"Bob".to_vec(),
-            consts::ETH_CURRENCY_CODE
+            consts::MOVE_CURRENCY_CODE,
+            0x1
         ));
         assert_err!(
-            Custom::create_account(Origin::signed(334), b"Bad".to_vec(), 255),
+            Custom::create_account(Origin::signed(334), 0xff, 255),
             Error::<Test>::CoinUnsupported
         );
-        assert_eq!(
-            <AccountsStore<Test>>::get(2).unwrap().1,
-            consts::ETH_CURRENCY_CODE
-        );
+        let script = String::from_utf8(<AccountsStore<Test>>::get(2).unwrap()).unwrap();
+        println!("{}", script);
     });
 }
 
 #[test]
 fn transfer_money_test() {
     test_obj().execute_with(|| {
-        Custom::create_account(
-            Origin::signed(3),
-            b"Bob".to_vec(),
-            consts::ETH_CURRENCY_CODE,
-        )
-        .unwrap();
         assert_ok!(Custom::transfer_funds(
             Origin::signed(2),
-            consts::ETH_CURRENCY_CODE,
-            32
+            consts::MOVE_CURRENCY_CODE,
+            0x1,
+            0x32
         ));
         assert_err!(
-            Custom::transfer_funds(Origin::signed(2), 255, 43),
+            Custom::transfer_funds(Origin::signed(2), 255, 1, 43),
             Error::<Test>::CoinUnsupported
         );
+
+        let script = String::from_utf8(<AccountsStore<Test>>::get(2).unwrap()).unwrap();
+        println!("{}", script);
     })
 }
 
 #[test]
 fn coin_sanity_test() {
     assert_ok!(coins::SupportedCoin::<Test>::try_from(
-        consts::ETH_CURRENCY_CODE
+        consts::MOVE_CURRENCY_CODE
     ));
     assert_eq!(
         coins::SupportedCoin::<Test>::try_from(255).err().unwrap(),
@@ -124,7 +120,7 @@ fn coin_sanity_test() {
 fn account_info_sanity_test() {
     assert_ok!(coins::AccountInfo::<Test>::try_from((
         b"Bob".to_vec(),
-        consts::ETH_CURRENCY_CODE
+        consts::MOVE_CURRENCY_CODE
     )));
 
     assert_eq!(

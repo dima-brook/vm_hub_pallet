@@ -9,8 +9,8 @@ pub mod pallet {
     use super::coins::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
-    use sp_std::{str, convert::*, marker::PhantomData, vec::Vec};
-    use xp_compiler::{deserialize::XpCallJson, consts::calls::*};
+    use sp_std::{convert::*, marker::PhantomData, str, vec::Vec};
+    use xp_compiler::{consts::calls::*, deserialize::XpCallJson};
 
     // Main pallet config
     #[pallet::config]
@@ -35,14 +35,22 @@ pub mod pallet {
             address: u128,
         ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
+
+            // Language sanity check
             let lang = SupportedCoin::<T>::try_from(language)?;
 
+            // Compile the script with our common interface
+            // create_account(address)
             let addr_s = address.to_string();
             let call = XpCallJson::new(lang.into(), CREATE_ACC, vec![&addr_s]);
-            let res = call.compile().map_err(|e| Error::<T>::from(e))?;
+            let res = call.compile().map_err(Error::<T>::from)?;
 
-            <AccountsStore<T>>::insert(&sender, res.encode());
+            // Save the script to store so that it can be retrieved
+            <AccountsStore<T>>::insert(&sender, res.as_bytes());
+
+            // Trigger event
             Self::deposit_event(Event::AccountCreation(sender, language));
+
             Ok(().into())
         }
 
@@ -57,12 +65,13 @@ pub mod pallet {
             let sender = ensure_signed(origin)?;
             let lang = SupportedCoin::<T>::try_from(language)?;
 
+            // transfer_amount(receiver, amount)
             let addr_s = receiver.to_string();
             let am_s = amount.to_string();
             let call = XpCallJson::new(lang.into(), TRANSFER_AMOUNT, vec![&addr_s, &am_s]);
-            let res = call.compile().map_err(|e| Error::<T>::from(e))?;
+            let res = call.compile().map_err(Error::<T>::from)?;
 
-            <AccountsStore<T>>::insert(&sender, res.encode());
+            <AccountsStore<T>>::insert(&sender, res.as_bytes());
             Self::deposit_event(Event::TransferFund(sender, language, receiver, amount));
             Ok(().into())
         }
@@ -92,11 +101,15 @@ pub mod pallet {
         CoinUnsupported,
         /// Empty Name during creation
         NameEmpty,
+        /// Invalid Script Arguments
         InvalidArgs,
+        /// Unsupported Language
         UnsupportedLang,
+        /// Unsupported Function
         UnsupportedCall,
     }
 
+    // Convert xp_compiler::errors::CompileError to Error
     impl<T: Config> From<xp_compiler::errors::CompileError> for Error<T> {
         fn from(val: xp_compiler::errors::CompileError) -> Self {
             use xp_compiler::errors::CompileError;
@@ -104,7 +117,7 @@ pub mod pallet {
             match val {
                 CompileError::UnsupportedLang(_) => Self::UnsupportedLang,
                 CompileError::UnsupportedCall(_) => Self::UnsupportedCall,
-                CompileError::InvalidArgs => Self::InvalidArgs
+                CompileError::InvalidArgs => Self::InvalidArgs,
             }
         }
     }

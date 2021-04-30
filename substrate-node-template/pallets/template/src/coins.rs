@@ -51,7 +51,7 @@ impl<T: Config> Into<&str> for SupportedCoin<T> {
     fn into(self) -> &'static str {
         match self {
             SupportedCoin::Move => xp_compiler::consts::langs::MOVE,
-            SupportedCoin::_Unreachable(_) => unreachable!()
+            SupportedCoin::_Unreachable(_) => unreachable!(),
         }
     }
 }
