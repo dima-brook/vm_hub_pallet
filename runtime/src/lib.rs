@@ -54,9 +54,6 @@ pub use pallet_timestamp::Call as TimestampCall;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
-/// Import the template pallet.
-pub use template;
-
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -419,8 +416,7 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
 }
 
-/// Configure the pallet template in pallets/template.
-impl template::Config for Runtime {
+impl solidity_compiler_pallet::Config for Runtime {
 	type Event = Event;
 }
 
@@ -442,7 +438,8 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Origin},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-		TemplatePallet: template::{Pallet, Call, Storage, Event<T>},
+        Solidity: solidity_compiler_pallet::{Pallet, Call, Config<T>, Storage, Event<T>},
+        //Move: move_compiler_pallet::{Pallet, Call, Config<T>, Storage, Event<T>}
 	}
 );
 
