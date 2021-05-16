@@ -54,6 +54,8 @@ pub use pallet_timestamp::Call as TimestampCall;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill, Perquintill};
 
+use pallet_contracts::weights::WeightInfo;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -126,6 +128,14 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 // 1 in 4 blocks (on average, not counting collisions) will be primary babe blocks.
 pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
+
+pub const ZP: Balance = 1000_000_000;
+pub const YP: Balance = 1000*ZP;
+pub const XP: Balance = 100*YP;
+
+const fn deposit(items: u32, bytes: u32) -> Balance {
+    items as Balance * 15 * YP + (bytes as Balance) * 6* YP
+}
 
 #[derive(codec::Encode, codec::Decode)]
 pub enum XCMPMessage<XAccountId, XBalance> {
@@ -420,6 +430,54 @@ impl solidity_compiler_pallet::Config for Runtime {
 	type Event = Event;
 }
 
+impl pallet_contracts::Config for Runtime {
+    type Time = Timestamp;
+    type Randomness = RandomnessCollectiveFlip;
+    type Currency = Balances;
+    type Event = Event;
+    type RentPayment = ();
+    type SignedClaimHandicap = SignedClaimHandicap;
+    type TombstoneDeposit = TombstoneDeposit;
+    type DepositPerContract = DepositPerContract;
+    type DepositPerStorageByte = DepositPerStorageByte;
+    type DepositPerStorageItem = DepositPerStorageItem;
+    type RentFraction = RentFraction;
+    type SurchargeReward = SurchargeReward;
+    type MaxDepth = MaxDepth;
+    type MaxValueSize = MaxValueSize;
+    type WeightPrice = pallet_transaction_payment::Module<Self>;
+    type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
+    type ChainExtension = ();
+    type DeletionQueueDepth = DeletionQueueDepth;
+    type DeletionWeightLimit = DeletionWeightLimit;
+    type MaxCodeSize = MaxCodeSize;
+}
+
+parameter_types! {
+    pub TombstoneDeposit: Balance = deposit(
+        1,
+        <pallet_contracts::Pallet<Runtime>>::contract_info_size()
+    );
+    pub DepositPerContract: Balance = TombstoneDeposit::get();
+    pub const DepositPerStorageByte: Balance = deposit(0, 1);
+    pub const DepositPerStorageItem: Balance = deposit(1, 0);
+    pub RentFraction: Perbill = Perbill::from_rational(1u32, 30 * DAYS);
+    pub const SurchargeReward: Balance = 150 * ZP;
+    pub const SignedClaimHandicap: u32 = 2;
+    pub const MaxDepth: u32 = 32;
+    pub const MaxValueSize: u32 = 16 * 1024;
+    // The lazy deletion runs inside on_initialize.
+    pub DeletionWeightLimit: Weight = AVERAGE_ON_INITIALIZE_RATIO *
+        RuntimeBlockWeights::get().max_block;
+    // The weight needed for decoding the queue should be less or equal than a fifth
+    // of the overall weight dedicated to the lazy deletion.
+    pub DeletionQueueDepth: u32 = ((DeletionWeightLimit::get() / (
+            <Runtime as pallet_contracts::Config>::WeightInfo::on_initialize_per_queue_item(1) -
+            <Runtime as pallet_contracts::Config>::WeightInfo::on_initialize_per_queue_item(0)
+        )) / 5) as u32;
+    pub MaxCodeSize: u32 = 128 * 1024;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -438,6 +496,7 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin},
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Origin},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
+        Contracts: pallet_contracts::{Pallet, Call, Config<T>, Storage, Event<T>},
         Solidity: solidity_compiler_pallet::{Pallet, Call, Config<T>, Storage, Event<T>},
         //Move: move_compiler_pallet::{Pallet, Call, Config<T>, Storage, Event<T>}
 	}
