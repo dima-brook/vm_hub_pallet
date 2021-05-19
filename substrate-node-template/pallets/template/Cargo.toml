@@ -23,6 +23,8 @@ frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 sp-std = { default-features = false, version = '3.0.0' }
 serde = { version = "1.0.119"  }
+xp-compiler = { git = "https://github.com/xpdiem/xp-compiler/", branch = "main" }
+hex = "0.4.3"
 
 [dev-dependencies]
 serde = { version = "1.0.119" }

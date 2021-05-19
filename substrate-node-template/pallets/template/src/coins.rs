@@ -5,6 +5,7 @@ use sp_std::{
     marker::PhantomData,
 };
 
+// Information associated with an account
 #[derive(Debug)]
 pub struct AccountInfo<T> {
     pub name: Vec<u8>,
@@ -29,7 +30,8 @@ impl<T: Config> TryFrom<(Vec<u8>, u8)> for AccountInfo<T> {
 // Supported coins
 #[derive(Debug)]
 pub enum SupportedCoin<T> {
-    Ethereum,
+    //Ethereum,
+    Move,
     _Unreachable(PhantomData<T>),
 }
 
@@ -38,8 +40,18 @@ impl<T: Config> TryFrom<u8> for SupportedCoin<T> {
 
     fn try_from(val: u8) -> Result<Self, Error<T>> {
         match val {
-            consts::ETH_CURRENCY_CODE => Ok(SupportedCoin::<T>::Ethereum),
+            //consts::ETH_CURRENCY_CODE => Ok(SupportedCoin::<T>::Ethereum),
+            consts::MOVE_CURRENCY_CODE => Ok(SupportedCoin::<T>::Move),
             _ => Err(Error::CoinUnsupported),
+        }
+    }
+}
+
+impl<T: Config> Into<&str> for SupportedCoin<T> {
+    fn into(self) -> &'static str {
+        match self {
+            SupportedCoin::Move => xp_compiler::consts::langs::MOVE,
+            SupportedCoin::_Unreachable(_) => unreachable!()
         }
     }
 }

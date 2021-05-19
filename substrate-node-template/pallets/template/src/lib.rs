@@ -9,7 +9,8 @@ pub mod pallet {
     use super::coins::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
-    use sp_std::{convert::*, marker::PhantomData, vec::Vec};
+    use sp_std::{str, convert::*, marker::PhantomData, vec::Vec};
+    use xp_compiler::{deserialize::XpCallJson, consts::calls::*};
 
     // Main pallet config
     #[pallet::config]
@@ -23,60 +24,64 @@ pub mod pallet {
     pub struct Pallet<T>(PhantomData<T>);
 
     // Calling outside of pallet(Extrensics)
+    // TODO: Tweak weights
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Create a new account with an initial currency
-        // TODO: Multiple currency
-        // TODO: Tweak Weight
-        // TODO: Implement account creation
         #[pallet::weight(50_000_000)]
         pub(super) fn create_account(
             origin: OriginFor<T>,
-            name: Vec<u8>,
-            currency: u8,
+            language: u8,
+            address: u128,
         ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
+            let lang = SupportedCoin::<T>::try_from(language)?;
 
-            let raw_info = (name, currency);
-            AccountInfo::<T>::try_from(raw_info.clone())?;
+            let addr_s = address.to_string();
+            let call = XpCallJson::new(lang.into(), CREATE_ACC, vec![&addr_s]);
+            let res = call.compile().map_err(|e| Error::<T>::from(e))?;
 
-            <AccountsStore<T>>::insert(&sender, raw_info);
+            <AccountsStore<T>>::insert(&sender, res.encode());
+            Self::deposit_event(Event::AccountCreation(sender, language));
             Ok(().into())
         }
 
         /// Transfer funds from your account
-        // TODO: Tweak weight
-        // TODO: implement actual logic
         #[pallet::weight(70_000_000)]
         pub(super) fn transfer_funds(
             origin: OriginFor<T>,
-            currency: u8,
-            amount: u128,
+            language: u8,
+            receiver: u128,
+            amount: u64,
         ) -> DispatchResultWithPostInfo {
             let sender = ensure_signed(origin)?;
+            let lang = SupportedCoin::<T>::try_from(language)?;
 
-            SupportedCoin::<T>::try_from(currency)?;
+            let addr_s = receiver.to_string();
+            let am_s = amount.to_string();
+            let call = XpCallJson::new(lang.into(), TRANSFER_AMOUNT, vec![&addr_s, &am_s]);
+            let res = call.compile().map_err(|e| Error::<T>::from(e))?;
 
-            Self::deposit_event(Event::TransferFund(sender, currency, amount));
+            <AccountsStore<T>>::insert(&sender, res.encode());
+            Self::deposit_event(Event::TransferFund(sender, language, receiver, amount));
             Ok(().into())
         }
     }
 
-    type RawCurrencyType = u8;
-    type RawAccountInfo = (Vec<u8>, RawCurrencyType);
+    type RawScriptData = Vec<u8>;
     // Pallet storage
     #[pallet::storage]
     #[pallet::getter(fn accounts)]
     pub(super) type AccountsStore<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, RawAccountInfo>;
+        StorageMap<_, Twox64Concat, T::AccountId, RawScriptData>;
 
     // Pallet events
     #[pallet::event]
     #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub (super) fn deposit_event)]
     pub enum Event<T: Config> {
-        AccountCreation(T::AccountId, RawAccountInfo), // AccountId, Currency Type
-        TransferFund(T::AccountId, RawCurrencyType, u128), // AccountId, Currency Type, Ammount
+        AccountCreation(T::AccountId, u8), // AccountId, Currency Type
+        TransferFund(T::AccountId, u8, u128, u64), // AccountId, Currency Type, Receiver, Ammount
     }
 
     // Errors
@@ -87,6 +92,21 @@ pub mod pallet {
         CoinUnsupported,
         /// Empty Name during creation
         NameEmpty,
+        InvalidArgs,
+        UnsupportedLang,
+        UnsupportedCall,
+    }
+
+    impl<T: Config> From<xp_compiler::errors::CompileError> for Error<T> {
+        fn from(val: xp_compiler::errors::CompileError) -> Self {
+            use xp_compiler::errors::CompileError;
+
+            match val {
+                CompileError::UnsupportedLang(_) => Self::UnsupportedLang,
+                CompileError::UnsupportedCall(_) => Self::UnsupportedCall,
+                CompileError::InvalidArgs => Self::InvalidArgs
+            }
+        }
     }
 
     // Pallet hooks
@@ -95,7 +115,7 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
-        pub initial_accounts: Vec<(T::AccountId, RawAccountInfo)>,
+        pub initial_accounts: Vec<(T::AccountId, RawScriptData)>,
     }
 
     #[cfg(feature = "std")]
