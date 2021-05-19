@@ -34,6 +34,16 @@ frame-support = { default-features = false, version = '3.0.0' }
 frame-system = { default-features = false, version = '3.0.0' }
 frame-system-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
 frame-system-rpc-runtime-api = { default-features = false, version = '3.0.0' }
+
+
+# evm stuff
+pallet-ethereum = { default-features = false, version = '1.0.0' }
+pallet-evm = { default-features = false, version = '3.0.0' }
+pallet-evm-precompile-simple = { default-features = false, version = '1.0.0' }
+pallet-evm-precompile-sha3fips = { default-features = false, version = '1.0.0' }
+pallet-evm-precompile-modexp = { default-features = false, version = '1.0.0' }
+fp-rpc = { default-features = false, version = '1.0.0' }
+
 pallet-aura = { default-features = false, version = '3.0.0' }
 pallet-balances = { default-features = false, version = '3.0.0' }
 pallet-grandpa = { default-features = false, version = '3.0.0' }
@@ -42,6 +52,7 @@ pallet-sudo = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = '3.0.0' }
+
 sp-api = { default-features = false, version = '3.0.0' }
 sp-block-builder = { default-features = false, version = '3.0.0' }
 sp-consensus-aura = { default-features = false, version = '0.9.0' }
@@ -69,11 +80,18 @@ runtime-benchmarks = [
 std = [
     'codec/std',
     'serde',
+
     'frame-executive/std',
     'frame-support/std',
     'frame-system/std',
     'frame-system-rpc-runtime-api/std',
-    'pallet-aura/std',
+
+	"pallet-ethereum/std",
+	"pallet-evm/std",
+	"pallet-evm-precompile-simple/std",
+	"pallet-evm-precompile-sha3fips/std",
+
+	'pallet-aura/std',
     'pallet-balances/std',
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
@@ -82,6 +100,7 @@ std = [
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
+
     'sp-api/std',
     'sp-block-builder/std',
     'sp-consensus-aura/std',
