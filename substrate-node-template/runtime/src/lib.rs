@@ -346,7 +346,8 @@ construct_runtime!(
 		Ethereum: pallet_ethereum::{Module, Call, Storage, Event, Config, ValidateUnsigned},
 		EVM: pallet_evm::{Module, Config, Call, Storage, Event<T>},
         // Custom Logic
-        TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
+        Solidity: solidity_compiler_pallet::{Module, Call, Storage, Event<T>},
+        Move: move_cp_pallet::{Module, Call, Storage, Event<T>}
 	}
 );
 

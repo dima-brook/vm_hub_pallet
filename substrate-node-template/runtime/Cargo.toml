@@ -24,8 +24,7 @@ version = '2.0.0'
 hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.119' }
 
-# local dependencies
-pallet-template = { path = '../pallets/template', default-features = false, version = '3.0.0' }
+getrandom = { version = "0.2.2", features = ["js"] }
 
 # Substrate dependencies
 frame-benchmarking = { default-features = false, optional = true, version = '3.0.0' }
@@ -52,6 +51,10 @@ pallet-sudo = { default-features = false, version = '3.0.0' }
 pallet-timestamp = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = '3.0.0' }
+
+# xp pallets
+solidity-compiler-pallet = { git = "https://github.com/VKint/xp-compiler-pallets", branch = "solidity" }
+move-cp-pallet = { git = "https://github.com/VKint/xp-compiler-pallets", branch = "move" }
 
 sp-api = { default-features = false, version = '3.0.0' }
 sp-block-builder = { default-features = false, version = '3.0.0' }
@@ -96,7 +99,8 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-template/std',
+    'solidity-compiler-pallet/std',
+	'move-cp-pallet/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
