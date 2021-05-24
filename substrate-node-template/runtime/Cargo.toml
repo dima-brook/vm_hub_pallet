@@ -52,9 +52,11 @@ pallet-timestamp = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment = { default-features = false, version = '3.0.0' }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = '3.0.0' }
 
+pallet-contracts = { default-features = false, version = '3.0.0' }
+pallet-contracts-primitives = { default-features = false, version = '3.0.0' }
+
 # xp pallets
-solidity-compiler-pallet = { git = "https://github.com/VKint/xp-compiler-pallets", branch = "solidity" }
-move-cp-pallet = { git = "https://github.com/VKint/xp-compiler-pallets", branch = "move" }
+solidity-compiler-pallet = { git = "https://github.com/VKint/xp-compiler-pallets", branch = "solidity", default-features = false }
 
 sp-api = { default-features = false, version = '3.0.0' }
 sp-block-builder = { default-features = false, version = '3.0.0' }
@@ -100,10 +102,11 @@ std = [
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
     'solidity-compiler-pallet/std',
-	'move-cp-pallet/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
+	'pallet-contracts/std',
+	'pallet-contracts-primitives/std',
 
     'sp-api/std',
     'sp-block-builder/std',
