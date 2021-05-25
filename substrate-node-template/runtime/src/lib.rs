@@ -50,9 +50,6 @@ use fp_rpc::TransactionStatus;
 use pallet_transaction_payment::CurrencyAdapter;
 use pallet_contracts::weights::WeightInfo;
 
-pub use pallet_template;
-
-
 /// Type of block number.
 pub type BlockNumber = u32;
 
@@ -127,7 +124,7 @@ pub const YP: Balance = 1000*ZP;
 pub const XP: Balance = 100*YP;
 
 const fn deposit(items: u32, bytes: u32) -> Balance {
-    items as Balance * 15 * YP + (bytes as Balance) * 6* YP;
+    items as Balance * 15 * YP + (bytes as Balance) * 6* YP
 }
 
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
@@ -385,8 +382,8 @@ parameter_types! {
     pub MaxCodeSize: u32 = 128 * 1024;
 }
 
-/// Custom pallet implementation.
-impl pallet_template::Config for Runtime {
+/// Solidity Pallet config
+impl solidity_compiler_pallet::Config for Runtime {
 	type Event = Event;
 }
 

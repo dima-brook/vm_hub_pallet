@@ -159,5 +159,8 @@ fn testnet_genesis(
 			accounts: BTreeMap::new()
 		}),
 		pallet_ethereum: Some(EthereumConfig {}),
+        pallet_contracts: Some(node_template_runtime::ContractsConfig {
+            current_schedule: Default::default()
+        }),
 	}
 }
