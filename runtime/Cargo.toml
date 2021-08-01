@@ -12,10 +12,17 @@ version = '3.0.0-monthly-2021-08'
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
-[dependencies.pallet-template]
+[dependencies.freezer-pallet]
 default-features = false
-path = '../pallets/template'
-version = '3.0.0-monthly-2021-08'
+path = '../pallets/freezer-pallet'
+
+[dependencies.pallet-commodities]
+default-features = false
+git = "https://github.com/xp-network/pallet-nft"
+
+[dependencies.pallet-erc1155]
+default-features = false
+git = "https://github.com/xp-network/pallet-erc1155"
 
 [build-dependencies.substrate-wasm-builder]
 git = 'https://github.com/paritytech/substrate.git'
@@ -193,7 +200,6 @@ runtime-benchmarks = [
     'frame-system/runtime-benchmarks',
     'hex-literal',
     'pallet-balances/runtime-benchmarks',
-    'pallet-template/runtime-benchmarks',
     'pallet-timestamp/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
 ]
@@ -208,10 +214,14 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-template/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
     'pallet-transaction-payment/std',
+
+	'pallet-erc1155/std',
+	'pallet-commodities/std',
+	'freezer-pallet/std',
+
     'sp-api/std',
     'sp-block-builder/std',
     'sp-consensus-aura/std',

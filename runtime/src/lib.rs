@@ -40,9 +40,6 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-/// Import the template pallet.
-pub use pallet_template;
-
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -265,10 +262,34 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
-	type Event = Event;
+impl pallet_erc1155::Config for Runtime {
+    type Balance = Balance;
+    type TokenId = u64;
+    type Event = Event;
+    type WeightInfo = pallet_erc1155::weights::SubstrateWeight<Self>;
 }
+
+impl pallet_commodities::Config for Runtime {
+    type Event = Event;
+    type CommodityAdmin = frame_system::EnsureRoot<Self::AccountId>;
+    type CommodityInfo = Vec<u8>;
+    type CommodityLimit = MaxCommodities;
+    type UserCommodityLimit = MaxCommoditiesPerUser;
+}
+
+parameter_types! {
+    pub const MaxCommodities: u64 = 1 << 32;
+    pub const MaxCommoditiesPerUser: u64 = 1 << 16;
+}
+
+impl freezer_pallet::Config for Runtime {
+    type Currency = Balances;
+    type Event = Event;
+    type Erc1155 = pallet_erc1155::Pallet<Self>;
+    type WeightInfo = freezer_pallet::weights::SubstrateWeight<Self>;
+    type Nft = pallet_commodities::Pallet<Self>;
+}
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -285,8 +306,9 @@ construct_runtime!(
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
+        Erc1155: pallet_erc1155::{Pallet, Storage, Event<T>},
+        Nft: pallet_commodities::{Pallet, Storage, Event<T>},
+        Freezer: freezer_pallet::{Pallet, Call, Config<T>, Storage, Event<T>},
 	}
 );
 

@@ -428,6 +428,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "bech32"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf9ff0bbfd639f15c74af777d81383cf53efb7c93613f6cab67c6c11e05bbf8b"
+
+[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1717,6 +1723,26 @@ source = "git+https://github.com/paritytech/substrate.git?tag=monthly-2021-08#4d
 dependencies = [
  "parity-scale-codec",
  "sp-api",
+]
+
+[[package]]
+name = "freezer-pallet"
+version = "0.1.0"
+dependencies = [
+ "bech32",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-commodities 1.0.0 (git+https://github.com/xp-network/pallet-nft)",
+ "pallet-erc1155 0.1.0 (git+https://github.com/xp-network/pallet-erc1155)",
+ "parity-scale-codec",
+ "reusable-fmt",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -3675,13 +3701,15 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "freezer-pallet",
  "hex-literal",
  "pallet-aura",
  "pallet-balances",
+ "pallet-commodities 1.0.0 (git+https://github.com/xp-network/pallet-nft)",
+ "pallet-erc1155 0.1.0 (git+https://github.com/xp-network/pallet-erc1155)",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
- "pallet-template",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -3897,6 +3925,65 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-commodities"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-commodities"
+version = "1.0.0"
+source = "git+https://github.com/xp-network/pallet-nft#e0848ceb3c783fa981f50a1bb204287ed440d406"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-erc1155"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "reusable-fmt",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-erc1155"
+version = "0.1.0"
+source = "git+https://github.com/xp-network/pallet-erc1155#fba822c6a50485f7af9310dc42713f7300e6d868"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "reusable-fmt",
+ "serde_json",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?tag=monthly-2021-08#4d28ebeb8b027ca0227fe7779c5beb70a7b56467"
@@ -3962,20 +4049,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-template"
-version = "3.0.0-monthly-2021-08"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
 ]
 
 [[package]]
@@ -4982,6 +5055,15 @@ name = "retain_mut"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9c17925a9027d298a4603d286befe3f9dc0e8ed02523141914eb628798d6e5b"
+
+[[package]]
+name = "reusable-fmt"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08070344f4199eeb603b350cfefa06de764124454e120071b2ae1240f5c9c83d"
+dependencies = [
+ "rustc_version 0.3.3",
+]
 
 [[package]]
 name = "ring"
