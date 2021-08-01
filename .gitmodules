@@ -1,0 +1,3 @@
+[submodule "pallets/freezer-pallet"]
+	path = pallets/freezer-pallet
+	url = https://github.com/xp-network/bridge-pallet
